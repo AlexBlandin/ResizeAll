@@ -27,7 +27,6 @@ def param(arg):
 
 if "-?" in args or "?" in args or "-h" in args:
   print("w2x resize-all")
-  print("by babel@afantasia.me")
   print()
   print(f"args:")
   print(
