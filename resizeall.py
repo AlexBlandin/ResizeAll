@@ -18,7 +18,7 @@ sufficient_size, dont_go_over = 2160, 8640
 denoise_level, to_scale, forced_scale = 1, True, 2
 executable, model = "C:/bin/w2x/waifu2x-ncnn-vulkan", "C:/bin/w2x/models-cunet"
 job_load, job_proc, job_save = 1, 2, 2
-output_folder, marker = "w2x/", ".w2x"
+output_folder, marker = None, ".w2x"
 delimlen = len(marker)
 
 def param(arg):
@@ -40,7 +40,7 @@ if "-?" in args or "?" in args or "-h" in args:
   print(f"    -s: int = Minimum sufficient dimension for an image in pixels, will scale by powers of 2 to reach this, default: {sufficient_size}px")
   print(f"    -d: int = Maximum dimension, ignore an image if one of the sides goes over, default: {dont_go_over}px")
   print(f"    -n: int = Set the denoise level used, negative to denoise with no resizing, default: {denoise_level}")
-  print(f'    -f: "output/folder/" = Place output images in the given folder, relative to the processed image, default: "{output_folder}"')
+  print('    -f: "output/folder/" = Place output images in the given folder, relative to the processed image')
   print(f'    -o: "_append2.name" = Output marker appended to file name (before extension), to identify the results, default: "{marker}"')
   print(f'    -e: "/path/to/w2x" = Directory for your w2x executable, default: "{executable}"')
   print(f'    -m: "/path/to/model/" = Directory for your model, default: "{model}"')
@@ -99,8 +99,6 @@ if "-e" in args and len(_exec := param("-e")) > 0:
 
 if "-f" in args and len(folder := param("-f")):
   output_folder = folder
-elif "-f" in args:
-  output_folder = "w2x/"
 else:
   output_folder = None
 
@@ -166,7 +164,7 @@ for img in list(files.values()):
     if not to_scale:
       images.append(img)
       continue
-    if (max(wh) > dont_go_over or min(wh) > sufficient_size) and not forced or not always:
+    if (max(wh) > dont_go_over or min(wh) > sufficient_size) and (not forced or not always):
       continue
     images.append(img)
   except Exception as err:
