@@ -171,7 +171,7 @@ for img in list(files.values()):
     trace = traceback.format_exc()
     erroneous.append(("Image Search Error", str(img), err, trace))
 
-print(f"Converting {len(images)} file{'s' if fc != 1 else ''} in {Path('.').resolve()}")
+print(f"Converting {len(images)} file{"s" if fc != 1 else ""} in {Path(".").resolve()}")
 with tqdm(images, unit = "img") as pbar:
   for img in pbar:
     try:
@@ -204,8 +204,8 @@ with tqdm(images, unit = "img") as pbar:
       if to_scale:
         if (max(wh) > dont_go_over or min(wh) > sufficient_size) and not forced:
           continue
-        pbar.set_postfix(magnif = f"{forced_scale if forced else magnif}x{'!!' if magnif > 7 else ''}")
-        set_title(f"Upscaling {img} by {forced_scale if forced else magnif}x{'!!' if magnif > 7 else ''}")
+        pbar.set_postfix(magnif = f"{forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")
+        set_title(f"Upscaling {img} by {forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")
       else:
         pbar.set_postfix(denoise = denoise_level)
         set_title(f"Denoising {img}")
