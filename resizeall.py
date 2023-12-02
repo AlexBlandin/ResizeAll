@@ -21,9 +21,11 @@ job_load, job_proc, job_save = 1, 2, 2
 output_folder, marker = None, ".w2x"
 delimlen = len(marker)
 
+
 def param(arg):
   a = argv.index(arg)
   return "" if a >= (len(argv) - 1) else argv[a + 1]
+
 
 if "-?" in args or "?" in args or "-h" in args:
   print("w2x resize-all")
@@ -63,7 +65,7 @@ if not to_scale and (always or forced):
   exit(1)
 
 if forced and always:
-  always = False # forced takes precedent
+  always = False  # forced takes precedent
 
 if "-s" in args and (size := int(param("-s"))) > 1:
   sufficient_size = size
@@ -113,7 +115,7 @@ if "-o" in args and len(delim := param("-o")):
 
 extensions = [".png", ".jpg", ".jpeg", ".jfif", ".tif", ".tiff", ".bmp", ".tga"]
 pattern = "*.[pPjJtTbB][nNpPiImMgGfF][gGeEfFpPaAiI]*"
-args = f'-f png -n {denoise_level} -j {job_load}:{job_proc}:{job_save} -m "{model}"' # -l png:jpg:jpeg:jfif:tif:tiff:bmp:tga
+args = f'-f png -n {denoise_level} -j {job_load}:{job_proc}:{job_save} -m "{model}"'  # -l png:jpg:jpeg:jfif:tif:tiff:bmp:tga
 
 gifpattern = "*.[gGaAwW][iIpPeE][fFnNbB]*"
 gifs = list(Path(".").rglob(gifpattern) if recursive else Path(".").glob(gifpattern))
@@ -123,9 +125,7 @@ if len(gifs) and not no and (yes or input("Magnify animated images? [y/N]: ").st
     if yes or input(f"Magnify {gif}? [y/N]: ").strip().lower() not in ["y", "ye", "yes"]:
       continue
     try:
-      if (
-        exstat := run(f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png', capture_output = True)
-      ).returncode:
+      if (exstat := run(f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png', capture_output=True)).returncode:
         erroneous.append(("Animation conversion error", str(gif), exstat.stderr, exstat.stdout))
     except Exception as err:
       trace = traceback.format_exc()
@@ -149,18 +149,21 @@ for img in list(files.values()):
     outparent = img.parent / output_folder if output_folder else img.parent
     outname = outparent / f"{img.stem}{marker}"
     as_resized = f"{Path(outname)}.png"
-    an_original = str(img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes))) # possible original by trimming output delimiter
+    an_original = str(img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes)))  # possible original by trimming output delimiter
     ext = str(img.suffix).lower()
-    
-    if (as_resized in files and not redoing) \
-      or (str(img.stem)[-delimlen:] == marker and an_original in files) \
-      or img.resolve().parts[-2] == "w2x" \
-      or (output_folder and outparent.is_file()) \
-      or ext not in extensions \
-      or exclude and img.parent.name in exclude_list:
+
+    if (
+      (as_resized in files and not redoing)
+      or (str(img.stem)[-delimlen:] == marker and an_original in files)
+      or img.resolve().parts[-2] == "w2x"
+      or (output_folder and outparent.is_file())
+      or ext not in extensions
+      or exclude
+      and img.parent.name in exclude_list
+    ):
       continue
-    
-    wh = Image.open(img).size # (width, height)
+
+    wh = Image.open(img).size  # (width, height)
     if not to_scale:
       images.append(img)
       continue
@@ -172,26 +175,28 @@ for img in list(files.values()):
     erroneous.append(("Image Search Error", str(img), err, trace))
 
 print(f"Converting {len(images)} file{"s" if fc != 1 else ""} in {Path(".").resolve()}")
-with tqdm(images, unit = "img") as pbar:
+with tqdm(images, unit="img") as pbar:
   for img in pbar:
     try:
       imgname = img.parent / img.name
       outparent = img.parent / output_folder if output_folder else img.parent
       outname = outparent / f"{img.stem}{marker}"
       as_resized = f"{Path(outname)}.png"
-      an_original = str(img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes))) # possible original by trimming output delimiter
+      an_original = str(img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes)))  # possible original by trimming output delimiter
       ext = str(img.suffix).lower()
-      
-      if (as_resized in files and not redoing) \
-        or (str(img.stem)[-delimlen:] == marker and an_original in files) \
-        or img.resolve().parts[-2] == "w2x" \
-        or (output_folder and outparent.is_file()) \
-        or ext not in extensions:
-        continue # might as well check twice now
+
+      if (
+        (as_resized in files and not redoing)
+        or (str(img.stem)[-delimlen:] == marker and an_original in files)
+        or img.resolve().parts[-2] == "w2x"
+        or (output_folder and outparent.is_file())
+        or ext not in extensions
+      ):
+        continue  # might as well check twice now
       if output_folder and not outparent.is_dir():
         outparent.mkdir()
-      
-      wh = Image.open(img).size # (width, height)
+
+      wh = Image.open(img).size  # (width, height)
       magnif = 1
       if to_scale:
         magnif = min(1 << (ceil(log2(sufficient_size / min(wh) - 1) + 1)), 32)
@@ -199,24 +204,24 @@ with tqdm(images, unit = "img") as pbar:
         magnif = forced_scale
       elif always:
         magnif = max(2, magnif)
-      
+
       exstat = None
       if to_scale:
         if (max(wh) > dont_go_over or min(wh) > sufficient_size) and not forced:
           continue
-        pbar.set_postfix(magnif = f"{forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")
+        pbar.set_postfix(magnif=f"{forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")
         set_title(f"Upscaling {img} by {forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")
       else:
-        pbar.set_postfix(denoise = denoise_level)
+        pbar.set_postfix(denoise=denoise_level)
         set_title(f"Denoising {img}")
-      
+
       if not to_scale:
-        exstat = run(f'{executable} -i "{img}" -s 1 -o "{as_resized}" {args} -x 0', capture_output = True)
+        exstat = run(f'{executable} -i "{img}" -s 1 -o "{as_resized}" {args} -x 0', capture_output=True)
       elif magnif > 7:
-        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1', capture_output = True)
+        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1', capture_output=True)
       elif magnif > 1:
-        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0', capture_output = True)
-      
+        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0', capture_output=True)
+
       if exstat and exstat.returncode != 0:
         erroneous.append(("Resize Error", str(img), exstat.stderr, exstat.stdout))
     except Exception as err:
@@ -227,11 +232,13 @@ print("File list exhausted")
 
 if (ec := len(erroneous)) > 0:
   from pprint import pprint
+
   print(f"{ec} errors detected, erroneous files:")
-  pprint(erroneous, compact = True)
+  pprint(erroneous, compact=True)
 else:
   print("No errors detected")
 
 if Path("./cudnn_data").exists():
   from shutil import rmtree
+
   rmtree(Path("./cudnn_data"))
