@@ -199,7 +199,7 @@ with tqdm(images, unit="img") as pbar:
       wh = Image.open(img).size  # (width, height)
       magnif = 1
       if to_scale:
-        magnif = min(1 << (ceil(log2(sufficient_size / min(wh) - 1) + 1)), 32)
+        magnif = min(1 << max(0, ceil(log2(sufficient_size / min(wh) - 1) + 1)), 32)
       if forced:
         magnif = forced_scale
       elif always:
