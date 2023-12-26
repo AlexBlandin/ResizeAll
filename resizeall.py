@@ -1,13 +1,13 @@
-from subprocess import run
-from pathlib import Path
-from ctypes import windll
-from time import sleep
-from math import log2, ceil
-from sys import argv
 import traceback
+from ctypes import windll
+from math import ceil, log2
+from pathlib import Path
+from subprocess import run
+from sys import argv, exit
+from time import sleep
 
-from tqdm import tqdm
 from PIL import Image
+from tqdm import tqdm
 
 Image.MAX_IMAGE_PIXELS = None
 set_title = windll.kernel32.SetConsoleTitleW
@@ -99,10 +99,7 @@ if "-e" in args and len(_exec := param("-e")) > 0:
   if len(_exec):
     executable = _exec
 
-if "-f" in args and len(folder := param("-f")):
-  output_folder = folder
-else:
-  output_folder = None
+output_folder = folder if "-f" in args and len(folder := param("-f")) else None
 
 if "-o" in args and len(delim := param("-o")):
   if delim[0] == '"':
@@ -120,12 +117,14 @@ args = f'-f png -n {denoise_level} -j {job_load}:{job_proc}:{job_save} -m "{mode
 gifpattern = "*.[gGaAwW][iIpPeE][fFnNbB]*"
 gifs = list(Path(".").rglob(gifpattern) if recursive else Path(".").glob(gifpattern))
 # split gifs
-if len(gifs) and not no and (yes or input("Magnify animated images? [y/N]: ").strip().lower() in ["y", "ye", "yes"]):
+if len(gifs) and not no and (yes or input("Magnify animated images? [y/N]: ").strip().lower() in {"y", "ye", "yes"}):
   for gif in gifs:
-    if yes or input(f"Magnify {gif}? [y/N]: ").strip().lower() not in ["y", "ye", "yes"]:
+    if yes or input(f"Magnify {gif}? [y/N]: ").strip().lower() not in {"y", "ye", "yes"}:
       continue
     try:
-      if (exstat := run(f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png', capture_output=True)).returncode:
+      if (
+        exstat := run(f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png', capture_output=True, check=False)
+      ).returncode:
         erroneous.append(("Animation conversion error", str(gif), exstat.stderr, exstat.stdout))
     except Exception as err:
       trace = traceback.format_exc()
@@ -153,7 +152,7 @@ for img in list(files.values()):
     ext = str(img.suffix).lower()
 
     if (
-      (as_resized in files and not redoing)
+      (as_resized in files and not redoing)  # noqa: PLR0916
       or (str(img.stem)[-delimlen:] == marker and an_original in files)
       or img.resolve().parts[-2] == "w2x"
       or (output_folder and outparent.is_file())
@@ -174,7 +173,7 @@ for img in list(files.values()):
     trace = traceback.format_exc()
     erroneous.append(("Image Search Error", str(img), err, trace))
 
-print(f"Converting {len(images)} file{"s" if fc != 1 else ""} in {Path(".").resolve()}")
+print(f"Converting {len(images)} file{"s" if fc != 1 else ""} in {Path.cwd()}")
 with tqdm(images, unit="img") as pbar:
   for img in pbar:
     try:
@@ -186,7 +185,7 @@ with tqdm(images, unit="img") as pbar:
       ext = str(img.suffix).lower()
 
       if (
-        (as_resized in files and not redoing)
+        (as_resized in files and not redoing)  # noqa: PLR0916
         or (str(img.stem)[-delimlen:] == marker and an_original in files)
         or img.resolve().parts[-2] == "w2x"
         or (output_folder and outparent.is_file())
@@ -216,11 +215,11 @@ with tqdm(images, unit="img") as pbar:
         set_title(f"Denoising {img}")
 
       if not to_scale:
-        exstat = run(f'{executable} -i "{img}" -s 1 -o "{as_resized}" {args} -x 0', capture_output=True)
+        exstat = run(f'{executable} -i "{img}" -s 1 -o "{as_resized}" {args} -x 0', capture_output=True, check=False)
       elif magnif > 7:
-        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1', capture_output=True)
+        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1', capture_output=True, check=False)
       elif magnif > 1:
-        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0', capture_output=True)
+        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0', capture_output=True, check=False)
 
       if exstat and exstat.returncode != 0:
         erroneous.append(("Resize Error", str(img), exstat.stderr, exstat.stdout))
