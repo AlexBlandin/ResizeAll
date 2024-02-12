@@ -115,7 +115,7 @@ pattern = "*.[pPjJtTbB][nNpPiImMgGfF][gGeEfFpPaAiI]*"
 args = f'-f png -n {denoise_level} -j {job_load}:{job_proc}:{job_save} -m "{model}"'  # -l png:jpg:jpeg:jfif:tif:tiff:bmp:tga
 
 gifpattern = "*.[gGaAwW][iIpPeE][fFnNbB]*"
-gifs = list(Path(".").rglob(gifpattern) if recursive else Path(".").glob(gifpattern))
+gifs = list(Path().rglob(gifpattern) if recursive else Path().glob(gifpattern))
 # split gifs
 if len(gifs) and not no and (yes or input("Magnify animated images? [y/N]: ").strip().lower() in {"y", "ye", "yes"}):
   for gif in gifs:
@@ -135,7 +135,7 @@ _unused = yes or no or input("Press [Enter/Return] to start conversion: ")
 sleep(0.5)
 
 # grab all dirs
-files = dict([(str(p), p) for p in (Path(".").rglob(pattern) if recursive else Path(".").glob(pattern))])
+files = {str(p): p for p in (Path().rglob(pattern) if recursive else Path().glob(pattern))}
 fc = len(files)
 if fc < 1:
   print("Found no files")
