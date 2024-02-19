@@ -1,3 +1,29 @@
+"""
+resize all w2x wrapper.
+
+Copyright 2022 Alex Blandin
+
+resizeall [-r] [-f] [--yes/no] [--redo] [--force/denoise]
+          [-s int] [-d int] [-e /path/to/w2x] [-m /to/model/] [-j load:proc:save] [-o str]
+          [-h -?]
+  -r = Recursive image find
+  --no = Autoanswer any questions with a "no", takes precedence over "--yes"
+  --yes = Autoanswer any questions with a "yes"
+  --redo = Overwrite already done images
+  --always = Always resize at least 2x magnification on all images, even if they are "too big"
+  --denoise = Denoise images only
+  -x: int = Set the magnification for resizing, use one of {acceptable_magnifications} or 0 to disable, default: 0
+  -s: int = Minimum sufficient dimension for an image in pixels,, default: {sufficient_size}px
+  -d: int = Maximum dimension, ignore an image if one of the sides goes over, default: {dont_go_over}px
+  -n: int = Set the denoise level used, negative to denoise with no resizing, default: {denoise_level}
+  -f: "output/folder/" = Place output images in the given folder, relative to the processed image
+  -o: "_append2.name" = Output marker appended to file name, to identify the results, default: "{marker}"
+  -e: "/path/to/w2x" = Directory of your w2x executable, default: "{executable}"
+  -m: "/path/to/model/" = Directory of your model, default: "{model}"
+  -j: load:proc:save = Threads used, speedups may use more memory, default: "{job_load}:{job_proc}:{job_save}"
+  -h or -? or ? = Show this help page
+"""
+
 import traceback
 from ctypes import windll
 from math import ceil, log2
@@ -22,32 +48,26 @@ output_folder, marker = None, ".w2x"
 delimlen = len(marker)
 
 
-def param(arg):
+def param(arg):  # noqa: ANN001, ANN201, D103
   a = argv.index(arg)
   return "" if a >= (len(argv) - 1) else argv[a + 1]
 
 
 if "-?" in args or "?" in args or "-h" in args:
-  print("w2x resize-all")
-  print()
-  print("args:")
-  print("  w2x [-r] [-f] [--yes/no] [--redo] [--force/denoise] [-s int] [-d int] [-e /path/to/w2x] [-m /path/to/model/] [-j load:proc:save] [-o str] [-h -?]")
-  print("    -r = Recursive image find")
-  print('    --no = Autoanswer any questions with a "no", takes precedence over "--yes"')
-  print('    --yes = Autoanswer any questions with a "yes"')
-  print("    --redo = Overwrite already done images")
-  print('    --always = Always resize at least 2x magnification on all images, even if they are "too big"')
-  print("    --denoise = Denoise images only")
-  print(f"    -x: int = Set the magnification for resizing, use one of {acceptable_magnifications} or 0 to disable, default: 0")
-  print(f"    -s: int = Minimum sufficient dimension for an image in pixels, will scale by powers of 2 to reach this, default: {sufficient_size}px")
-  print(f"    -d: int = Maximum dimension, ignore an image if one of the sides goes over, default: {dont_go_over}px")
-  print(f"    -n: int = Set the denoise level used, negative to denoise with no resizing, default: {denoise_level}")
-  print('    -f: "output/folder/" = Place output images in the given folder, relative to the processed image')
-  print(f'    -o: "_append2.name" = Output marker appended to file name (before extension), to identify the results, default: "{marker}"')
-  print(f'    -e: "/path/to/w2x" = Directory for your w2x executable, default: "{executable}"')
-  print(f'    -m: "/path/to/model/" = Directory for your model, default: "{model}"')
-  print(f'    -j: load:proc:save = Threads used by w2x, increasing may speedup processing but may use more memory, default: "{job_load}:{job_proc}:{job_save}"')
-  print("    -h or -? or ? = Show this help page")
+  print(
+    __doc__.format(
+      acceptable_magnifications=acceptable_magnifications,
+      sufficient_size=sufficient_size,
+      dont_go_over=dont_go_over,
+      denoise_level=denoise_level,
+      marker=marker,
+      executable=executable,
+      model=model,
+      job_load=job_load,
+      job_proc=job_proc,
+      job_save=job_save,
+    )
+  )
   exit()
 
 recursive = "-r" in args
@@ -73,7 +93,7 @@ if "-s" in args and (size := int(param("-s"))) > 1:
 if "-d" in args and (size := int(param("-d"))) > 1:
   dont_go_over = size
 
-if "-n" in args and -1 <= abs(level := int(param("-n"))) <= 3:
+if "-n" in args and -1 <= abs(level := int(param("-n"))) <= 3:  # noqa: PLR2004
   denoise_level = level
 
 if forced and (size := int(param("-x"))):
@@ -112,7 +132,9 @@ if "-o" in args and len(delim := param("-o")):
 
 extensions = [".png", ".jpg", ".jpeg", ".jfif", ".tif", ".tiff", ".bmp", ".tga"]
 pattern = "*.[pPjJtTbB][nNpPiImMgGfF][gGeEfFpPaAiI]*"
-args = f'-f png -n {denoise_level} -j {job_load}:{job_proc}:{job_save} -m "{model}"'  # -l png:jpg:jpeg:jfif:tif:tiff:bmp:tga
+args = (
+  f'-f png -n {denoise_level} -j {job_load}:{job_proc}:{job_save} -m "{model}"'  # -l png:jpg:jpeg:jfif:tif:tiff:bmp:tga
+)
 
 gifpattern = "*.[gGaAwW][iIpPeE][fFnNbB]*"
 gifs = list(Path().rglob(gifpattern) if recursive else Path().glob(gifpattern))
@@ -123,10 +145,14 @@ if len(gifs) and not no and (yes or input("Magnify animated images? [y/N]: ").st
       continue
     try:
       if (
-        exstat := run(f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png', capture_output=True, check=False)
+        exstat := run(
+          f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png',  # noqa: S603
+          capture_output=True,
+          check=False,
+        )
       ).returncode:
         erroneous.append(("Animation conversion error", str(gif), exstat.stderr, exstat.stdout))
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
       trace = traceback.format_exc()
       erroneous.append(("Animation conversion error", str(gif), err, trace))
 
@@ -148,11 +174,13 @@ for img in list(files.values()):
     outparent = img.parent / output_folder if output_folder else img.parent
     outname = outparent / f"{img.stem}{marker}"
     as_resized = f"{Path(outname)}.png"
-    an_original = str(img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes)))  # possible original by trimming output delimiter
+    an_original = str(
+      img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes))
+    )  # possible original by trimming output delimiter
     ext = str(img.suffix).lower()
 
     if (
-      (as_resized in files and not redoing)  # noqa: PLR0916
+      (as_resized in files and not redoing)
       or (str(img.stem)[-delimlen:] == marker and an_original in files)
       or img.resolve().parts[-2] == "w2x"
       or (output_folder and outparent.is_file())
@@ -169,7 +197,7 @@ for img in list(files.values()):
     if (max(wh) > dont_go_over or min(wh) > sufficient_size) and (not forced or not always):
       continue
     images.append(img)
-  except Exception as err:
+  except Exception as err:  # noqa: BLE001
     trace = traceback.format_exc()
     erroneous.append(("Image Search Error", str(img), err, trace))
 
@@ -181,11 +209,13 @@ with tqdm(images, unit="img") as pbar:
       outparent = img.parent / output_folder if output_folder else img.parent
       outname = outparent / f"{img.stem}{marker}"
       as_resized = f"{Path(outname)}.png"
-      an_original = str(img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes)))  # possible original by trimming output delimiter
+      an_original = str(
+        img.parent / (str(img.stem)[:-delimlen] + "".join(img.suffixes))
+      )  # possible original by trimming output delimiter
       ext = str(img.suffix).lower()
 
       if (
-        (as_resized in files and not redoing)  # noqa: PLR0916
+        (as_resized in files and not redoing)
         or (str(img.stem)[-delimlen:] == marker and an_original in files)
         or img.resolve().parts[-2] == "w2x"
         or (output_folder and outparent.is_file())
@@ -208,22 +238,30 @@ with tqdm(images, unit="img") as pbar:
       if to_scale:
         if (max(wh) > dont_go_over or min(wh) > sufficient_size) and not forced:
           continue
-        pbar.set_postfix(magnif=f"{forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")
-        set_title(f"Upscaling {img} by {forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")
+        pbar.set_postfix(magnif=f"{forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")  # noqa: PLR2004
+        set_title(f"Upscaling {img} by {forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")  # noqa: PLR2004
       else:
         pbar.set_postfix(denoise=denoise_level)
         set_title(f"Denoising {img}")
 
       if not to_scale:
-        exstat = run(f'{executable} -i "{img}" -s 1 -o "{as_resized}" {args} -x 0', capture_output=True, check=False)
-      elif magnif > 7:
-        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1', capture_output=True, check=False)
+        exstat = run(f'{executable} -i "{img}" -s 1 -o "{as_resized}" {args} -x 0', capture_output=True, check=False)  # noqa: S603
+      elif magnif > 7:  # noqa: PLR2004
+        exstat = run(
+          f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1',  # noqa: S603
+          capture_output=True,
+          check=False,
+        )
       elif magnif > 1:
-        exstat = run(f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0', capture_output=True, check=False)
+        exstat = run(
+          f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0',  # noqa: S603
+          capture_output=True,
+          check=False,
+        )
 
       if exstat and exstat.returncode != 0:
         erroneous.append(("Resize Error", str(img), exstat.stderr, exstat.stdout))
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
       trace = traceback.format_exc()
       erroneous.append(("Resize Error", str(img), err, trace))
 
