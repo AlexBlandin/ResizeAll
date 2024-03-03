@@ -3,6 +3,7 @@ name = "ResizeAll"
 version = "1.0.0"
 description = "Resize images in bulk!"
 authors = ["AlexBlandin"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
