@@ -1,20 +1,19 @@
 [project]
 name = "ResizeAll"
 description = "Resize images in bulk!"
+version = "1.0.0"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "AlexBlandin" }]
 dependencies = ["tqdm", "Pillow"]
-dynamic = ["version"]
 
 [project.optional-dependencies]
 toml = ["pytomlpp"]
 cli = ["colorama; platform_system == 'Windows'"]
 all = ["toml", "cli"]
 lint = ["ruff"]
-check = ["mypy"]
-dev = ["all", "lint", "check"]
+dev = ["all", "lint"]
 
 [project.urls]
 Documentation = "https://github.com/alexblandin/ResizeAll#readme"
@@ -25,9 +24,6 @@ Source = "https://github.com/alexblandin/ResizeAll"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.version]
-path = "src/__init__.py"
-
 [tool.hatch.envs.default]
 dependencies = ["tqdm", "Pillow"]
 features = ["toml", "cli"]
@@ -36,9 +32,9 @@ features = ["toml", "cli"]
 dependencies = ["lint"]
 detached = true
 
-[tool.hatch.envs.dev]
-features = ["dev"]
-post-install-commands = ["mypy --install-types --non-interactive src/mymodule"]
+# [tool.hatch.envs.dev]
+# features = ["dev"]
+# post-install-commands = ["mypy --install-types --non-interactive src/mymodule"]
 
 [tool.ruff]
 indent-width = 2
@@ -48,8 +44,7 @@ line-length = 120
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-  "ERA",    # code comments actually help 
-  "INP001", # useless before hatch
+  "ERA",    # code comments actually help
   "TD003",  # not using github to track todo/issues
   "S311",   # I know when to use secrets
   "T20",    # print is good, actually 
