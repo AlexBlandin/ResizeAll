@@ -9,32 +9,12 @@ authors = [{ name = "AlexBlandin" }]
 dependencies = ["tqdm", "Pillow"]
 
 [project.optional-dependencies]
-toml = ["pytomlpp"]
-cli = ["colorama; platform_system == 'Windows'"]
-all = ["toml", "cli"]
-lint = ["ruff"]
-dev = ["all", "lint"]
+dev = ["ruff"]
 
 [project.urls]
 Documentation = "https://github.com/alexblandin/ResizeAll#readme"
 Issues = "https://github.com/alexblandin/ResizeAll/issues"
 Source = "https://github.com/alexblandin/ResizeAll"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.envs.default]
-dependencies = ["tqdm", "Pillow"]
-features = ["toml", "cli"]
-
-[tool.hatch.envs.lint]
-dependencies = ["lint"]
-detached = true
-
-# [tool.hatch.envs.dev]
-# features = ["dev"]
-# post-install-commands = ["mypy --install-types --non-interactive src/mymodule"]
 
 [tool.ruff]
 indent-width = 2
