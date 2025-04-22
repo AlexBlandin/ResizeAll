@@ -3,13 +3,13 @@ name = "ResizeAll"
 description = "Resize images in bulk!"
 version = "1.0.0"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "AlexBlandin" }]
-dependencies = ["tqdm", "Pillow"]
+dependencies = ["tqdm", "pillow>=11.2.1", "attrs", "cattrs"]
 
 [project.optional-dependencies]
-dev = ["ruff"]
+dev = ["ruff", "pdbp", "basedmypy", "basedpyright"]
 
 [project.urls]
 Documentation = "https://github.com/alexblandin/ResizeAll#readme"
@@ -18,7 +18,7 @@ Source = "https://github.com/alexblandin/ResizeAll"
 
 [tool.ruff]
 indent-width = 2
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]
@@ -27,7 +27,8 @@ ignore = [
   "ERA",    # code comments actually help
   "TD003",  # not using github to track todo/issues
   "S311",   # I know when to use secrets
-  "T20",    # print is good, actually 
+  # "T20",    # print is good, actually 
+  "D202",   # a little vertical separation can be nice
   "W191",   # ruff format
   "E111",   # ruff format
   "E114",   # ruff format

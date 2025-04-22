@@ -1,3 +1,14 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "tqdm",
+#     "attrs",
+#     "cattrs",
+#     "pillow>=11.2.1",
+# ]
+# ///
+#
 """
 resize all w2x wrapper.
 
@@ -54,7 +65,7 @@ def param(arg):  # noqa: ANN001, ANN201, D103
 
 
 if "-?" in args or "?" in args or "-h" in args:
-  print(
+  print(  # noqa: T201
     __doc__.format(
       acceptable_magnifications=acceptable_magnifications,
       sufficient_size=sufficient_size,
@@ -81,7 +92,7 @@ exclude = "--exclude" in args
 exclude_list = []
 
 if not to_scale and (always or forced):
-  print("You cannot set --denoise either --always or -x, as --denoise is without scaling")
+  print("You cannot set --denoise either --always or -x, as --denoise is without scaling")  # noqa: T201
   exit(1)
 
 if forced and always:
@@ -100,7 +111,7 @@ if forced and (size := int(param("-x"))):
   if size in acceptable_magnifications:
     forced_scale = int(size)
   else:
-    print(f"Unfortunately, -x must be one of {acceptable_magnifications} (was {size})")
+    print(f"Unfortunately, -x must be one of {acceptable_magnifications} (was {size})")  # noqa: T201
     exit(1)
 
 if "-m" in args and len(_model := param("-m")) > 0:
@@ -146,7 +157,7 @@ if len(gifs) and not no and (yes or input("Magnify animated images? [y/N]: ").st
     try:
       if (
         exstat := run(
-          f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png',  # noqa: S603
+          f'ffmpeg -v "warning" -i "{gif}" -vsync 0 -vf mpdecimate=frac=0.01 "{gif.parent}/{gif.stem}"%05d.png',
           capture_output=True,
           check=False,
         )
@@ -164,7 +175,7 @@ sleep(0.5)
 files = {str(p): p for p in (Path().rglob(pattern) if recursive else Path().glob(pattern))}
 fc = len(files)
 if fc < 1:
-  print("Found no files")
+  print("Found no files")  # noqa: T201
   exit()
 
 images: list[Path] = []
@@ -185,8 +196,7 @@ for img in list(files.values()):
       or img.resolve().parts[-2] == "w2x"
       or (output_folder and outparent.is_file())
       or ext not in extensions
-      or exclude
-      and img.parent.name in exclude_list
+      or (exclude and img.parent.name in exclude_list)
     ):
       continue
 
@@ -201,7 +211,7 @@ for img in list(files.values()):
     trace = traceback.format_exc()
     erroneous.append(("Image Search Error", str(img), err, trace))
 
-print(f"Converting {len(images)} file{"s" if fc != 1 else ""} in {Path.cwd()}")
+print(f"Converting {len(images)} file{'s' if fc != 1 else ''} in {Path.cwd()}")  # noqa: T201
 with tqdm(images, unit="img") as pbar:
   for img in pbar:
     try:
@@ -238,8 +248,8 @@ with tqdm(images, unit="img") as pbar:
       if to_scale:
         if (max(wh) > dont_go_over or min(wh) > sufficient_size) and not forced:
           continue
-        pbar.set_postfix(magnif=f"{forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")  # noqa: PLR2004
-        set_title(f"Upscaling {img} by {forced_scale if forced else magnif}x{"!!" if magnif > 7 else ""}")  # noqa: PLR2004
+        pbar.set_postfix(magnif=f"{forced_scale if forced else magnif}x{'!!' if magnif > 7 else ''}")  # noqa: PLR2004
+        set_title(f"Upscaling {img} by {forced_scale if forced else magnif}x{'!!' if magnif > 7 else ''}")  # noqa: PLR2004
       else:
         pbar.set_postfix(denoise=denoise_level)
         set_title(f"Denoising {img}")
@@ -248,13 +258,13 @@ with tqdm(images, unit="img") as pbar:
         exstat = run(f'{executable} -i "{img}" -s 1 -o "{as_resized}" {args} -x 0', capture_output=True, check=False)  # noqa: S603
       elif magnif > 7:  # noqa: PLR2004
         exstat = run(
-          f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1',  # noqa: S603
+          f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 1',
           capture_output=True,
           check=False,
         )
       elif magnif > 1:
         exstat = run(
-          f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0',  # noqa: S603
+          f'{executable} -i "{img}" -s {magnif} -o "{as_resized}" {args} -x 0',
           capture_output=True,
           check=False,
         )
@@ -265,15 +275,15 @@ with tqdm(images, unit="img") as pbar:
       trace = traceback.format_exc()
       erroneous.append(("Resize Error", str(img), err, trace))
 
-print("File list exhausted")
+print("File list exhausted")  # noqa: T201
 
 if (ec := len(erroneous)) > 0:
   from pprint import pprint
 
-  print(f"{ec} errors detected, erroneous files:")
-  pprint(erroneous, compact=True)
+  print(f"{ec} errors detected, erroneous files:")  # noqa: T201
+  pprint(erroneous, compact=True)  # noqa: T203
 else:
-  print("No errors detected")
+  print("No errors detected")  # noqa: T201
 
 if Path("./cudnn_data").exists():
   from shutil import rmtree
