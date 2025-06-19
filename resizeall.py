@@ -2,10 +2,10 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "tqdm",
-#     "attrs",
-#     "cattrs",
-#     "pillow>=11.2.1",
+#   "tqdm",
+#   "attrs",
+#   "cattrs",
+#   "pillow>=11.2.1",
 # ]
 # ///
 #
@@ -150,7 +150,7 @@ args = (
 gifpattern = "*.[gGaAwW][iIpPeE][fFnNbB]*"
 gifs = list(Path().rglob(gifpattern) if recursive else Path().glob(gifpattern))
 # split gifs
-if len(gifs) and not no and (yes or input("Magnify animated images? [y/N]: ").strip().lower() in {"y", "ye", "yes"}):
+if gifs and not no and (yes or input("Magnify animated images? [y/N]: ").strip().lower() in {"y", "ye", "yes"}):
   for gif in gifs:
     if yes or input(f"Magnify {gif}? [y/N]: ").strip().lower() not in {"y", "ye", "yes"}:
       continue
