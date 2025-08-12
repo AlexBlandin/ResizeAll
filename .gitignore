@@ -1,3 +1,5 @@
+*.code-workspace
+
 # ---> Python
 requirements.txt
 requirements-*.txt
