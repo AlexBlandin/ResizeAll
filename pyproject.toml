@@ -9,7 +9,7 @@ authors = [{ name = "AlexBlandin" }]
 dependencies = ["tqdm", "pillow>=11.2.1", "attrs", "cattrs"]
 
 [project.optional-dependencies]
-dev = ["ruff", "pdbp", "basedmypy", "basedpyright"]
+dev = ["ruff"]
 
 [project.urls]
 Documentation = "https://github.com/alexblandin/ResizeAll#readme"
